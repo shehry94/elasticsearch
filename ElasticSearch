@@ -1,0 +1,62 @@
+- Installing Elastic Search
+1. JAVA
+JDK from software manager
+
+2. ES
+download elasticsearch-5.5.0.tar.gz
+>>tar -xvf elasticsearch-5.5.0.tar.gz
+>>cd elasticseach-5.5.0/bin
+
+=== START SERVER ===
+>> ./elasticseach
+
+-  override either the cluster or node name. This can be done from the command line when starting Elasticsearch as follows:
+>> ./elasticsearch -Ecluster.name=my_cluster_name -Enode.name=my_node_name
+
+=== WARN UP ===
+- check nodes
+curl -XGET 'localhost:9200/_cat/nodes?v&pretty'
+
+- check indices
+curl -XGET 'localhost:9200/_cat/indices?v&pretty'
+
+- create index
+curl -XPUT 'localhost:9200/customer?pretty&pretty'
+
+- Index a Document , external type
+1. with ID
+<REST Verb> /<Index>(customer)/<Type>(external)/<ID>(1)
+curl -XPUT 'localhost:9200/customer/external/1?pretty&pretty' -H 'Content-Type: application/json' -d'{"name": "John Doe"}'
+2. without ID (POST) (Random IDs)
+curl -XPOST 'localhost:9200/customer/external?pretty&pretty' -H 'Content-Type: application/json' -d'{"name": "Jane Doe"}'
+
+- check all documents in an index
+<REST Verb> /<Index>(customer)/_search?size=1000&from=0
+curl -XGET 'localhost:9200/customer/_search?size=1000&from=0'
+
+- Query a Document document that we just indexed:
+curl -XGET 'localhost:9200/customer/external/1?pretty&pretty'
+
+- Delete and index
+curl -XDELETE 'localhost:9200/customer?pretty&pretty'
+
+
+
+=== MODIFYING DATA NRT ===
+--- Updating ID=1
+
+curl -XPOST 'localhost:9200/customer/external/1/_update?pretty&pretty' -H 'Content-Type: application/json' -d'{"doc": { "name": "Jane Doe" }}'
+
+- more attributes
+curl -XPOST 'localhost:9200/customer/external/1/_update?pretty&pretty' -H 'Content-Type: application/json' -d'{"doc": { "name": "Jane Doe", "age": 20 }}'
+
+- via script
+Updates can also be performed by using simple scripts. This example uses a script to increment the age by 5:
+curl -XPOST 'localhost:9200/customer/external/1/_update?pretty&pretty' -H 'Content-Type: application/json' -d'{"script" : "ctx._source.age +=5"}'
+In the above example, ctx._source refers to the current source document that is about to be updated.
+
+--- Deleting
+curl -XDELETE 'localhost:9200/customer/external/2?pretty&pretty'
+
+
+=== BATCH PROCESSING ===
